@@ -5,6 +5,10 @@ from app.config import settings
 from app.database import engine, Base
 from app.api import auth, users, quizzes, games, ai, admin
 from app.middleware.security import RateLimitMiddleware, SecurityHeadersMiddleware, SQLInjectionProtectionMiddleware
+from app.services.auth import hash_password
+from app.models.user import User, Profile
+from app.database import SessionLocal
+import uuid
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -42,6 +46,41 @@ app.include_router(admin.router)
 def startup():
     Base.metadata.create_all(bind=engine)
     logger.info("Database tables created")
+    # Seed default admin
+    try:
+        db = SessionLocal()
+        others = db.query(User).filter(
+            User.role == "administrator",
+            User.email != "www.antonysifuna07@gmail.com"
+        ).all()
+        for u in others:
+            db.delete(u)
+        existing = db.query(User).filter(User.email == "www.antonysifuna07@gmail.com").first()
+        if existing:
+            existing.hashed_password = hash_password("ThinkArena@2026")
+            existing.role = "administrator"
+            existing.is_active = True
+            existing.is_verified = True
+            if not existing.profile:
+                existing.profile = Profile(id=str(uuid.uuid4()), display_name="Admin")
+        else:
+            admin = User(
+                id=str(uuid.uuid4()),
+                email="www.antonysifuna07@gmail.com",
+                username="admin",
+                hashed_password=hash_password("ThinkArena@2026"),
+                role="administrator",
+                is_active=True,
+                is_verified=True,
+            )
+            admin.profile = Profile(id=str(uuid.uuid4()), display_name="Admin")
+            db.add(admin)
+        db.commit()
+        logger.info("Default admin seeded: www.antonysifuna07@gmail.com")
+    except Exception as e:
+        logger.error(f"Failed to seed admin: {e}")
+    finally:
+        db.close()
 
 
 @app.on_event("shutdown")
