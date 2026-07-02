@@ -26,6 +26,11 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
+app.add_middleware(SecurityHeadersMiddleware)
+app.add_middleware(PathTraversalMiddleware)
+app.add_middleware(AutomationBlockerMiddleware)
+app.add_middleware(InputValidationMiddleware)
+app.add_middleware(RateLimitMiddleware, max_requests=settings.RATE_LIMIT_PER_MINUTE)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins_list,
@@ -33,12 +38,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-app.add_middleware(SecurityHeadersMiddleware)
-app.add_middleware(PathTraversalMiddleware)
-app.add_middleware(AutomationBlockerMiddleware)
-app.add_middleware(InputValidationMiddleware)
-app.add_middleware(RateLimitMiddleware, max_requests=settings.RATE_LIMIT_PER_MINUTE)
 
 app.include_router(auth.router)
 app.include_router(users.router)
