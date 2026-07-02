@@ -52,6 +52,8 @@ def get_badges(current_user: User = Depends(get_current_user)):
 def get_leaderboard(limit: int = 50, db: Session = Depends(get_db)):
     profiles = (
         db.query(Profile)
+        .join(User)
+        .filter(User.role == "student")
         .order_by(Profile.xp.desc())
         .limit(limit)
         .all()
