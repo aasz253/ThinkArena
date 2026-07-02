@@ -3,7 +3,7 @@ import { adminAPI } from "@/lib/api";
 import Button from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Users, BookOpen, Gamepad2, Activity, Trash2, Shield, Ban, History } from "lucide-react";
+import { Users, BookOpen, Gamepad2, Activity, Trash2, Shield, Ban, History, Eye, X, Trophy, Target, TrendingUp, Award } from "lucide-react";
 import toast from "react-hot-toast";
 
 export default function AdminDashboard() {
@@ -12,6 +12,8 @@ export default function AdminDashboard() {
   const [quizzes, setQuizzes] = useState<any[]>([]);
   const [logs, setLogs] = useState<any[]>([]);
   const [tab, setTab] = useState<"overview" | "users" | "quizzes" | "logs">("overview");
+  const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     loadData();
@@ -62,6 +64,15 @@ export default function AdminDashboard() {
       loadData();
     } catch {
       toast.error("Failed");
+    }
+  };
+
+  const viewUser = async (userId: string) => {
+    try {
+      const res = await adminAPI.getUser(userId);
+      setSelectedUser(res.data);
+    } catch {
+      toast.error("Failed to load user details");
     }
   };
 
@@ -137,6 +148,12 @@ export default function AdminDashboard() {
       {tab === "users" && (
         <Card>
           <CardContent className="p-4">
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search users by name or email..."
+              className="w-full mb-4 px-4 py-2.5 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:border-primary-500 outline-none"
+            />
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
@@ -151,7 +168,7 @@ export default function AdminDashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {users.map((u: any) => (
+                  {users.filter(u => !search || u.username.toLowerCase().includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase())).map((u: any) => (
                     <tr key={u.id} className="border-b border-gray-100 dark:border-gray-800">
                       <td className="py-2 px-3 font-medium">{u.username}</td>
                       <td className="py-2 px-3 text-sm text-gray-500">{u.email}</td>
@@ -167,7 +184,10 @@ export default function AdminDashboard() {
                       <td className="py-2 px-3 text-center">
                         <span className={`inline-block w-2 h-2 rounded-full ${u.is_active ? "bg-green-500" : "bg-red-500"}`} />
                       </td>
-                      <td className="py-2 px-3 text-right">
+                      <td className="py-2 px-3 text-right flex gap-1 justify-end">
+                        <button onClick={() => viewUser(u.id)} className="p-2 rounded-lg text-primary-500 hover:bg-primary-50" title="View details">
+                          <Eye className="w-4 h-4" />
+                        </button>
                         <button onClick={() => toggleActive(u.id)} className={`p-2 rounded-lg ${u.is_active ? "text-red-500 hover:bg-red-50" : "text-green-500 hover:bg-green-50"}`} title={u.is_active ? "Deactivate" : "Activate"}>
                           <Ban className="w-4 h-4" />
                         </button>
@@ -218,6 +238,47 @@ export default function AdminDashboard() {
             </div>
           </CardContent>
         </Card>
+      )}
+
+      {selectedUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => setSelectedUser(null)}>
+          <div className="w-full max-w-lg bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+              <h2 className="text-xl font-bold">{selectedUser.display_name || selectedUser.username}</h2>
+              <button onClick={() => setSelectedUser(null)} className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div><span className="text-gray-500">Email:</span> <span className="font-medium">{selectedUser.email}</span></div>
+                <div><span className="text-gray-500">Role:</span> <Badge>{selectedUser.role}</Badge></div>
+                <div><span className="text-gray-500">Status:</span> <span className={selectedUser.is_active ? "text-green-500" : "text-red-500"}>{selectedUser.is_active ? "Active" : "Inactive"}</span></div>
+                <div><span className="text-gray-500">Verified:</span> {selectedUser.is_verified ? "Yes" : "No"}</div>
+                <div><span className="text-gray-500">Level:</span> {selectedUser.level}</div>
+                <div><span className="text-gray-500">XP:</span> {selectedUser.xp}</div>
+                <div><span className="text-gray-500">Games Played:</span> {selectedUser.games_played}</div>
+                <div><span className="text-gray-500">Games Hosted:</span> {selectedUser.games_hosted}</div>
+                <div><span className="text-gray-500">Quizzes Created:</span> {selectedUser.quizzes_created}</div>
+                <div><span className="text-gray-500">Accuracy:</span> {selectedUser.accuracy}%</div>
+                <div><span className="text-gray-500">Highest Score:</span> {selectedUser.highest_score}</div>
+                <div><span className="text-gray-500">Total Score:</span> {selectedUser.total_score}</div>
+                <div><span className="text-gray-500">Correct Answers:</span> {selectedUser.correct_answers}/{selectedUser.total_answers}</div>
+                <div><span className="text-gray-500">Win Streak:</span> {selectedUser.win_streak}</div>
+                <div><span className="text-gray-500">Best Streak:</span> {selectedUser.best_streak}</div>
+              </div>
+              {selectedUser.bio && (
+                <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
+                  <p className="text-sm text-gray-500">Bio:</p>
+                  <p className="text-sm">{selectedUser.bio}</p>
+                </div>
+              )}
+              <div className="pt-3 text-xs text-gray-400">
+                Joined: {new Date(selectedUser.created_at).toLocaleString()}
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
       {tab === "logs" && (

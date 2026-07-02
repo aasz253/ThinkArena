@@ -108,6 +108,44 @@ def update_user_role(
     return {"message": "User role updated"}
 
 
+@router.get("/users/{user_id}")
+def admin_get_user(
+    user_id: str,
+    current_user: User = Depends(require_role("admin")),
+    db: Session = Depends(get_db),
+):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    profile = user.profile
+    games_played = db.query(func.count(Player.id)).filter(Player.user_id == user_id).scalar()
+    total_score = db.query(func.sum(Player.score)).filter(Player.user_id == user_id).scalar() or 0
+    return {
+        "id": user.id,
+        "username": user.username,
+        "email": user.email,
+        "role": user.role,
+        "is_active": user.is_active,
+        "is_verified": user.is_verified,
+        "created_at": user.created_at,
+        "display_name": profile.display_name if profile else None,
+        "avatar_url": profile.avatar_url if profile else None,
+        "bio": profile.bio if profile else None,
+        "xp": profile.xp if profile else 0,
+        "level": profile.level if profile else 1,
+        "games_played": profile.games_played if profile else 0,
+        "games_hosted": profile.games_hosted if profile else 0,
+        "quizzes_created": profile.quizzes_created if profile else 0,
+        "total_score": total_score,
+        "highest_score": profile.highest_score if profile else 0,
+        "accuracy": profile.accuracy if profile else 0,
+        "win_streak": profile.win_streak if profile else 0,
+        "best_streak": profile.best_streak if profile else 0,
+        "correct_answers": profile.correct_answers if profile else 0,
+        "total_answers": profile.total_answers if profile else 0,
+    }
+
+
 @router.put("/users/{user_id}/toggle-active")
 def toggle_user_active(
     user_id: str,

@@ -102,6 +102,7 @@ export const aiAPI = {
 export const adminAPI = {
   getDashboard: () => api.get("/admin/dashboard"),
   listUsers: (params?: any) => api.get("/admin/users", { params }),
+  getUser: (userId: string) => api.get(`/admin/users/${userId}`),
   updateUserRole: (userId: string, role: string) => api.put(`/admin/users/${userId}/role`, { role }),
   toggleUserActive: (userId: string) => api.put(`/admin/users/${userId}/toggle-active`),
   listQuizzes: (params?: any) => api.get("/admin/quizzes", { params }),
