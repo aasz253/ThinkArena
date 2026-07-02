@@ -61,7 +61,10 @@ export default function LandingPage() {
               <Button size="lg" onClick={() => navigate("/register")}>
                 Get Started Free
               </Button>
-              <Button size="lg" variant="outline" onClick={() => navigate("/explore")}>
+              <Button size="lg" variant="outline" onClick={() => navigate("/join")}>
+                Join with Passcode
+              </Button>
+              <Button size="lg" variant="ghost" onClick={() => navigate("/explore")}>
                 Explore Quizzes
               </Button>
             </div>

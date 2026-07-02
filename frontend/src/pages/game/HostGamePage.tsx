@@ -5,7 +5,7 @@ import { useHostWebSocket } from "@/hooks/useWebSocket";
 import Button from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar } from "@/components/ui/avatar";
-import { Copy, Play, SkipForward, Users, Trophy, Crown, Timer } from "lucide-react";
+import { Copy, Play, SkipForward, Users, Trophy, Crown, Timer, Pause } from "lucide-react";
 import toast from "react-hot-toast";
 
 export default function HostGamePage() {
@@ -21,6 +21,7 @@ export default function HostGamePage() {
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
   const [results, setResults] = useState<any[]>([]);
   const [countdown, setCountdown] = useState<number>(0);
+  const [paused, setPaused] = useState(false);
 
   const ws = useHostWebSocket(game?.id || null);
 
@@ -47,20 +48,23 @@ export default function HostGamePage() {
     ws.on("question", (data: any) => {
       setCurrentQuestion(data.question);
       setQuestionIndex(data.question_index);
-      setCountdown(data.question.time_limit || 20);
+      setCountdown(data.question.time_limit || 10);
+      setPaused(false);
     });
     ws.on("leaderboard_update", (data: any) => {
       setLeaderboard(data.leaderboard);
     });
     ws.on("game_finished", () => setGameStatus("finished"));
     ws.on("final_results", (data: any) => setResults(data.results));
+    ws.on("paused", () => setPaused(true));
+    ws.on("resumed", () => setPaused(false));
   }, [ws]);
 
   useEffect(() => {
-    if (countdown <= 0 || gameStatus !== "live") return;
+    if (countdown <= 0 || gameStatus !== "live" || paused) return;
     const timer = setInterval(() => setCountdown((c) => c - 1), 1000);
     return () => clearInterval(timer);
-  }, [countdown, gameStatus]);
+  }, [countdown, gameStatus, paused]);
 
   const handleStart = () => {
     ws.send({ action: "start_game" });
@@ -68,6 +72,14 @@ export default function HostGamePage() {
 
   const handleNext = () => {
     ws.send({ action: "next_question" });
+  };
+
+  const handlePause = () => {
+    ws.send({ action: "pause" });
+  };
+
+  const handleResume = () => {
+    ws.send({ action: "resume" });
   };
 
   const handleShowResults = () => {
@@ -149,14 +161,32 @@ export default function HostGamePage() {
               ))}
             </div>
 
+            {paused && (
+              <div className="p-4 mb-4 rounded-xl bg-yellow-500/20 border border-yellow-500/50 text-center">
+                <p className="font-bold text-yellow-400 text-lg">⏸️ Paused — Explain the answer to your students</p>
+                <p className="text-gray-300 text-sm mt-1">Click Resume when ready to continue</p>
+              </div>
+            )}
+
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2 text-gray-400">
                 <Users className="w-4 h-4" />
                 {leaderboard.length} answered
               </div>
-              <Button onClick={handleNext} variant="secondary">
-                <SkipForward className="w-4 h-4 mr-2" /> Next Question
-              </Button>
+              <div className="flex gap-2">
+                {paused ? (
+                  <Button onClick={handleResume} variant="primary">
+                    <Play className="w-4 h-4 mr-2" /> Resume
+                  </Button>
+                ) : (
+                  <Button onClick={handlePause} variant="outline">
+                    <Pause className="w-4 h-4 mr-2" /> Pause
+                  </Button>
+                )}
+                <Button onClick={handleNext} variant="secondary">
+                  <SkipForward className="w-4 h-4 mr-2" /> Next
+                </Button>
+              </div>
             </div>
 
             {leaderboard.length > 0 && (

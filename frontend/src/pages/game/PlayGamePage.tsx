@@ -30,6 +30,7 @@ export default function PlayGamePage() {
   const [streak, setStreak] = useState(0);
   const [results, setResults] = useState<any[]>([]);
   const [answered, setAnswered] = useState(false);
+  const [paused, setPaused] = useState(false);
 
   const ws = usePlayerWebSocket(gameId || null, playerId || null);
 
@@ -73,13 +74,16 @@ export default function PlayGamePage() {
       alert(data.message);
       navigate("/");
     });
+
+    ws.on("paused", () => setPaused(true));
+    ws.on("resumed", () => setPaused(false));
   }, [ws]);
 
   useEffect(() => {
-    if (countdown <= 0 || answered || gameStatus !== "live") return;
+    if (countdown <= 0 || answered || gameStatus !== "live" || paused) return;
     const timer = setInterval(() => setCountdown((c) => c - 1), 1000);
     return () => clearInterval(timer);
-  }, [countdown, answered, gameStatus]);
+  }, [countdown, answered, gameStatus, paused]);
 
   const handleAnswer = (choiceId: string) => {
     if (answered) return;

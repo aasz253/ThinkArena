@@ -128,6 +128,14 @@ async def handle_host_connection(game_id: str, websocket: WebSocket):
                 finally:
                     db.close()
 
+            elif action == "pause":
+                await manager.send_to_host(game_id, {"type": "paused"})
+                await manager.broadcast_to_players(game_id, {"type": "paused", "message": "Host paused the game for explanation"})
+
+            elif action == "resume":
+                await manager.send_to_host(game_id, {"type": "resumed"})
+                await manager.broadcast_to_players(game_id, {"type": "resumed"})
+
             elif action == "next_question":
                 db = SessionLocal()
                 try:
