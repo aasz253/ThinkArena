@@ -8,8 +8,15 @@ from app.services.ai import (
 )
 from pydantic import BaseModel
 from typing import List, Optional
+import json
+import re
 
 router = APIRouter(prefix="/ai", tags=["AI"])
+
+
+def _parse_json_response(raw: str) -> dict:
+    clean = re.sub(r"^```(?:json)?\s*|\s*```$", "", raw.strip(), flags=re.MULTILINE)
+    return json.loads(clean)
 
 
 class QuizGenerateRequest(BaseModel):
@@ -53,12 +60,11 @@ def api_generate_quiz(
 ):
     if current_user.role not in ["teacher", "administrator"]:
         raise HTTPException(status_code=403, detail="Only teachers can use AI generation")
-    import json
     result = generate_quiz(data.topic, data.difficulty, data.num_questions, data.question_types)
     try:
-        return json.loads(result)
+        return _parse_json_response(result)
     except json.JSONDecodeError:
-        return {"raw": result}
+        return {"raw": result, "error": "Failed to parse AI response as JSON"}
 
 
 @router.post("/generate-questions")
@@ -68,59 +74,53 @@ def api_generate_questions(
 ):
     if current_user.role not in ["teacher", "administrator"]:
         raise HTTPException(status_code=403, detail="Only teachers can use AI generation")
-    import json
     result = generate_questions(data.topic, data.count, data.question_type)
     try:
-        return json.loads(result)
+        return _parse_json_response(result)
     except json.JSONDecodeError:
         return {"raw": result}
 
 
 @router.post("/explain")
 def api_explain(data: ExplanationRequest, current_user: User = Depends(get_current_user)):
-    import json
     result = generate_explanation(data.question, data.correct_answer)
     try:
-        return json.loads(result)
+        return _parse_json_response(result)
     except json.JSONDecodeError:
         return {"raw": result}
 
 
 @router.post("/summarize")
 def api_summarize(data: SummarizeRequest, current_user: User = Depends(get_current_user)):
-    import json
     result = summarize_quiz(data.quiz_title, data.questions)
     try:
-        return json.loads(result)
+        return _parse_json_response(result)
     except json.JSONDecodeError:
         return {"raw": result}
 
 
 @router.post("/recommend-difficulty")
 def api_recommend_difficulty(data: dict, current_user: User = Depends(get_current_user)):
-    import json
     result = recommend_difficulty(data.get("topic", ""))
     try:
-        return json.loads(result)
+        return _parse_json_response(result)
     except json.JSONDecodeError:
         return {"raw": result}
 
 
 @router.post("/tutor")
 def api_tutor(data: TutorRequest, current_user: User = Depends(get_current_user)):
-    import json
     result = ai_tutor(data.question, data.user_answer, data.correct_answer)
     try:
-        return json.loads(result)
+        return _parse_json_response(result)
     except json.JSONDecodeError:
         return {"raw": result}
 
 
 @router.post("/study-assistant")
 def api_study_assistant(data: StudyAssistantRequest, current_user: User = Depends(get_current_user)):
-    import json
     result = ai_study_assistant(data.topic, data.user_level)
     try:
-        return json.loads(result)
+        return _parse_json_response(result)
     except json.JSONDecodeError:
         return {"raw": result}
