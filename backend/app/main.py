@@ -52,39 +52,60 @@ app.include_router(admin.router)
 def startup():
     Base.metadata.create_all(bind=engine)
     logger.info("Database tables created")
-    # Seed default admin
+    # Seed default users
     try:
         db = SessionLocal()
-        others = db.query(User).filter(
-            User.role == "administrator",
-            User.email != "www.antonysifuna07@gmail.com"
-        ).all()
-        for u in others:
-            db.delete(u)
-        existing = db.query(User).filter(User.email == "www.antonysifuna07@gmail.com").first()
-        if existing:
-            existing.hashed_password = hash_password("ThinkArena@2026")
-            existing.role = "administrator"
-            existing.is_active = True
-            existing.is_verified = True
-            if not existing.profile:
-                existing.profile = Profile(id=str(uuid.uuid4()), display_name="Admin")
-        else:
-            admin = User(
+
+        def ensure_user(email: str, username: str, password: str, role: str, display: str):
+            existing = db.query(User).filter(User.email == email).first()
+            if existing:
+                existing.hashed_password = hash_password(password)
+                existing.role = role
+                existing.is_active = True
+                existing.is_verified = True
+                if not existing.profile:
+                    existing.profile = Profile(id=str(uuid.uuid4()), display_name=display)
+                return False
+            user = User(
                 id=str(uuid.uuid4()),
-                email="www.antonysifuna07@gmail.com",
-                username="admin",
-                hashed_password=hash_password("ThinkArena@2026"),
-                role="administrator",
+                email=email,
+                username=username,
+                hashed_password=hash_password(password),
+                role=role,
                 is_active=True,
                 is_verified=True,
             )
-            admin.profile = Profile(id=str(uuid.uuid4()), display_name="Admin")
-            db.add(admin)
+            user.profile = Profile(id=str(uuid.uuid4()), display_name=display)
+            db.add(user)
+            return True
+
+        # Remove any other admins
+        for u in db.query(User).filter(
+            User.role == "administrator",
+            User.email != "www.antonysifuna07@gmail.com"
+        ).all():
+            db.delete(u)
+
+        ensure_user(
+            "www.antonysifuna07@gmail.com", "admin", "ThinkArena@2026",
+            "administrator", "Admin",
+        )
+        ensure_user(
+            "teacher@thinkarena.com", "teacher1", "Teacher@2026",
+            "teacher", "Teacher One",
+        )
+        ensure_user(
+            "student1@thinkarena.com", "student1", "Student@2026",
+            "student", "Student One",
+        )
+        ensure_user(
+            "student2@thinkarena.com", "student2", "Student@2026",
+            "student", "Student Two",
+        )
         db.commit()
-        logger.info("Default admin seeded: www.antonysifuna07@gmail.com")
+        logger.info("Default users seeded")
     except Exception as e:
-        logger.error(f"Failed to seed admin: {e}")
+        logger.error(f"Failed to seed users: {e}")
     finally:
         db.close()
 
