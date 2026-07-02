@@ -1,13 +1,15 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { quizzesAPI } from "@/lib/api";
 import Button from "@/components/ui/button";
-import Input from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Search, Clock, User, Play, Filter, Brain } from "lucide-react";
+import { Search, User, Play, Brain, Key } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function ExplorePage() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [quizzes, setQuizzes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -38,14 +40,34 @@ export default function ExplorePage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {(!user || user.role === "student") && (
+        <div className="mb-8">
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary-600 via-secondary-600 to-accent-600 p-0.5">
+            <div className="rounded-2xl bg-gray-900 p-8 text-center">
+              <h2 className="text-2xl font-bold text-white mb-2">Join a Live Quiz</h2>
+              <p className="text-gray-300 mb-6">Enter the 6-digit PIN from your teacher to join the game!</p>
+              <button
+                onClick={() => navigate("/join")}
+                className="animate-blink-bg px-10 py-4 rounded-xl text-lg font-bold text-white shadow-2xl transition-all hover:scale-105"
+              >
+                <Key className="w-5 h-5 inline mr-2" />
+                Join with Passcode
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-bold">Explore Quizzes</h1>
           <p className="text-gray-500">Discover quizzes created by the community</p>
         </div>
-        <Link to="/create">
-          <Button>Create Quiz</Button>
-        </Link>
+        {user && (user.role === "teacher" || user.role === "administrator") && (
+          <Link to="/create">
+            <Button>Create Quiz</Button>
+          </Link>
+        )}
       </div>
 
       <div className="flex flex-col md:flex-row gap-4 mb-8">

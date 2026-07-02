@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import Button from "@/components/ui/button";
-import { Brain, Zap, Users, Trophy, Sparkles, Shield, BarChart3, Globe } from "lucide-react";
+import { Brain, Zap, Users, Trophy, Sparkles, Shield, BarChart3, Globe, Key } from "lucide-react";
 
 const features = [
   { icon: Zap, title: "Real-Time Games", desc: "Host live quiz games with WebSocket-powered real-time responses" },
@@ -61,9 +61,13 @@ export default function LandingPage() {
               <Button size="lg" onClick={() => navigate("/register")}>
                 Get Started Free
               </Button>
-              <Button size="lg" variant="outline" onClick={() => navigate("/join")}>
+              <button
+                onClick={() => navigate("/join")}
+                className="animate-blink-bg px-8 py-3.5 rounded-xl text-lg font-bold text-white shadow-2xl transition-all hover:scale-105"
+              >
+                <Key className="w-5 h-5 inline mr-2" />
                 Join with Passcode
-              </Button>
+              </button>
               <Button size="lg" variant="ghost" onClick={() => navigate("/explore")}>
                 Explore Quizzes
               </Button>

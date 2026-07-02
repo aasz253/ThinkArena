@@ -73,3 +73,14 @@ input[type="number"]::-webkit-outer-spin-button {
 input[type="number"] {
   -moz-appearance: textfield;
 }
+
+@keyframes blinkBg {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.animate-blink-bg {
+  background: linear-gradient(135deg, #4F46E5, #7C3AED, #06B6D4);
+  background-size: 200% 200%;
+  animation: blinkBg 1.5s ease infinite;
+}

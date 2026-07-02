@@ -3,14 +3,15 @@ import { adminAPI } from "@/lib/api";
 import Button from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Users, BookOpen, Gamepad2, Activity, Trash2, Shield, Ban } from "lucide-react";
+import { Users, BookOpen, Gamepad2, Activity, Trash2, Shield, Ban, History } from "lucide-react";
 import toast from "react-hot-toast";
 
 export default function AdminDashboard() {
   const [dashboard, setDashboard] = useState<any>(null);
   const [users, setUsers] = useState<any[]>([]);
   const [quizzes, setQuizzes] = useState<any[]>([]);
-  const [tab, setTab] = useState<"overview" | "users" | "quizzes">("overview");
+  const [logs, setLogs] = useState<any[]>([]);
+  const [tab, setTab] = useState<"overview" | "users" | "quizzes" | "logs">("overview");
 
   useEffect(() => {
     loadData();
@@ -18,14 +19,16 @@ export default function AdminDashboard() {
 
   const loadData = async () => {
     try {
-      const [dashRes, userRes, quizRes] = await Promise.all([
+      const [dashRes, userRes, quizRes, logRes] = await Promise.all([
         adminAPI.getDashboard(),
         adminAPI.listUsers({ limit: 50 }),
         adminAPI.listQuizzes({ limit: 50 }),
+        adminAPI.getLogs({ limit: 100 }),
       ]);
       setDashboard(dashRes.data);
       setUsers(userRes.data);
       setQuizzes(quizRes.data);
+      setLogs(logRes.data);
     } catch (err) {
       console.error(err);
     }
@@ -66,10 +69,10 @@ export default function AdminDashboard() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
 
-      <div className="flex gap-2 mb-6">
-        {["overview", "users", "quizzes"].map((t) => (
+      <div className="flex gap-2 mb-6 flex-wrap">
+        {["overview", "users", "quizzes", "logs"].map((t) => (
           <Button key={t} variant={tab === t ? "primary" : "ghost"} size="sm" onClick={() => setTab(t as any)}>
-            {t === "overview" ? "Overview" : t === "users" ? "Users" : "Quizzes"}
+            {t === "overview" ? "Overview" : t === "users" ? "Users" : t === "quizzes" ? "Quizzes" : "Activity Log"}
           </Button>
         ))}
       </div>
@@ -141,6 +144,8 @@ export default function AdminDashboard() {
                     <th className="text-left py-2 px-3 font-medium">Username</th>
                     <th className="text-left py-2 px-3 font-medium">Email</th>
                     <th className="text-left py-2 px-3 font-medium">Role</th>
+                    <th className="text-center py-2 px-3 font-medium">Level</th>
+                    <th className="text-center py-2 px-3 font-medium">XP</th>
                     <th className="text-center py-2 px-3 font-medium">Active</th>
                     <th className="text-right py-2 px-3 font-medium">Actions</th>
                   </tr>
@@ -157,6 +162,8 @@ export default function AdminDashboard() {
                           <option value="admin">Admin</option>
                         </select>
                       </td>
+                      <td className="py-2 px-3 text-center">{u.level || 1}</td>
+                      <td className="py-2 px-3 text-center">{u.xp || 0}</td>
                       <td className="py-2 px-3 text-center">
                         <span className={`inline-block w-2 h-2 rounded-full ${u.is_active ? "bg-green-500" : "bg-red-500"}`} />
                       </td>
@@ -206,6 +213,47 @@ export default function AdminDashboard() {
                       </td>
                     </tr>
                   ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {tab === "logs" && (
+        <Card>
+          <CardContent className="p-4">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-gray-200 dark:border-gray-700">
+                    <th className="text-left py-2 px-3 font-medium">Time</th>
+                    <th className="text-left py-2 px-3 font-medium">User</th>
+                    <th className="text-left py-2 px-3 font-medium">Action</th>
+                    <th className="text-left py-2 px-3 font-medium">Resource</th>
+                    <th className="text-left py-2 px-3 font-medium">Details</th>
+                    <th className="text-left py-2 px-3 font-medium">IP</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {logs.length === 0 ? (
+                    <tr><td colSpan={6} className="py-8 text-center text-gray-400">No activity logs yet</td></tr>
+                  ) : (
+                    logs.map((log: any) => (
+                      <tr key={log.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                        <td className="py-2 px-3 text-sm whitespace-nowrap">{new Date(log.created_at).toLocaleString()}</td>
+                        <td className="py-2 px-3 text-sm">{log.user_id?.slice(0, 8) || "—"}</td>
+                        <td className="py-2 px-3">
+                          <Badge variant={log.action === "delete" ? "danger" : log.action === "create" ? "success" : "info"}>
+                            {log.action}
+                          </Badge>
+                        </td>
+                        <td className="py-2 px-3 text-sm">{log.resource}</td>
+                        <td className="py-2 px-3 text-sm text-gray-500 max-w-xs truncate">{log.details || "—"}</td>
+                        <td className="py-2 px-3 text-sm text-gray-400 font-mono">{log.ip_address || "—"}</td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
