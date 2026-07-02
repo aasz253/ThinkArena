@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import Button from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
-import { Brain, Moon, Sun, LogOut, User, Menu, X, Trophy, Grid3X3 } from "lucide-react";
+import { Brain, Moon, Sun, LogOut, User, Menu, X, Trophy, Grid3X3, Shield } from "lucide-react";
 import { useState } from "react";
 
 export default function Navbar() {
@@ -27,14 +27,22 @@ export default function Navbar() {
             <Link to="/explore" className="text-gray-600 dark:text-gray-300 hover:text-primary-500 transition-colors font-medium">
               Explore
             </Link>
-            <Link to="/leaderboard" className="text-gray-600 dark:text-gray-300 hover:text-primary-500 transition-colors font-medium">
-              <Trophy className="w-4 h-4 inline mr-1" />
-              Leaderboard
-            </Link>
-            {user?.role === "teacher" && (
+            {user && (user.role === "teacher" || user.role === "administrator") && (
+              <Link to="/leaderboard" className="text-gray-600 dark:text-gray-300 hover:text-primary-500 transition-colors font-medium">
+                <Trophy className="w-4 h-4 inline mr-1" />
+                Leaderboard
+              </Link>
+            )}
+            {(user?.role === "teacher" || user?.role === "administrator") && (
               <Link to="/dashboard" className="text-gray-600 dark:text-gray-300 hover:text-primary-500 transition-colors font-medium">
                 <Grid3X3 className="w-4 h-4 inline mr-1" />
                 Dashboard
+              </Link>
+            )}
+            {user?.role === "administrator" && (
+              <Link to="/admin" className="text-gray-600 dark:text-gray-300 hover:text-primary-500 transition-colors font-medium">
+                <Shield className="w-4 h-4 inline mr-1" />
+                Admin
               </Link>
             )}
           </div>
@@ -85,17 +93,24 @@ export default function Navbar() {
             <Link to="/explore" className="text-gray-600 dark:text-gray-300 font-medium" onClick={() => setMobileOpen(false)}>
               Explore
             </Link>
-            <Link to="/leaderboard" className="text-gray-600 dark:text-gray-300 font-medium" onClick={() => setMobileOpen(false)}>
-              Leaderboard
-            </Link>
+            {user && (user.role === "teacher" || user.role === "administrator") && (
+              <Link to="/leaderboard" className="text-gray-600 dark:text-gray-300 font-medium" onClick={() => setMobileOpen(false)}>
+                Leaderboard
+              </Link>
+            )}
             {user ? (
               <>
                 <Link to="/profile" className="text-gray-600 dark:text-gray-300 font-medium" onClick={() => setMobileOpen(false)}>
                   Profile
                 </Link>
-                {user.role === "teacher" && (
+                {(user.role === "teacher" || user.role === "administrator") && (
                   <Link to="/dashboard" className="text-gray-600 dark:text-gray-300 font-medium" onClick={() => setMobileOpen(false)}>
                     Dashboard
+                  </Link>
+                )}
+                {user.role === "administrator" && (
+                  <Link to="/admin" className="text-gray-600 dark:text-gray-300 font-medium" onClick={() => setMobileOpen(false)}>
+                    Admin Panel
                   </Link>
                 )}
                 <button onClick={() => { logout(); setMobileOpen(false); }} className="text-left text-red-500 font-medium">

@@ -42,7 +42,11 @@ export default function App() {
       <Route path="/login" element={<Layout hideFooter><LoginPage /></Layout>} />
       <Route path="/register" element={<Layout hideFooter><RegisterPage /></Layout>} />
       <Route path="/explore" element={<Layout><ExplorePage /></Layout>} />
-      <Route path="/leaderboard" element={<Layout><LeaderboardPage /></Layout>} />
+      <Route path="/leaderboard" element={
+        <ProtectedRoute roles={["teacher", "administrator"]}>
+          <Layout><LeaderboardPage /></Layout>
+        </ProtectedRoute>
+      } />
       
       <Route path="/dashboard" element={
         <ProtectedRoute roles={["teacher", "admin"]}>
