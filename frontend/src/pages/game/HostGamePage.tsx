@@ -5,7 +5,7 @@ import { useHostWebSocket } from "@/hooks/useWebSocket";
 import Button from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar } from "@/components/ui/avatar";
-import { Copy, Play, SkipForward, Users, Trophy, Crown, Timer, Pause } from "lucide-react";
+import { Copy, Play, SkipForward, Users, Trophy, Crown, Timer, Pause, Download } from "lucide-react";
 import toast from "react-hot-toast";
 
 export default function HostGamePage() {
@@ -84,6 +84,22 @@ export default function HostGamePage() {
 
   const handleShowResults = () => {
     ws.send({ action: "show_results" });
+  };
+
+  const handleExportCSV = async () => {
+    if (!game?.id) return;
+    try {
+      const res = await gamesAPI.exportCSV(game.id);
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${quiz?.title || "quiz"}_results.csv`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+      toast.success("CSV exported!");
+    } catch {
+      toast.error("Export failed");
+    }
   };
 
   const copyPin = () => {
@@ -243,7 +259,10 @@ export default function HostGamePage() {
               </div>
             ))}
 
-            <div className="mt-8 flex gap-4 justify-center">
+            <div className="mt-8 flex flex-wrap gap-4 justify-center">
+              <Button variant="outline" onClick={handleExportCSV}>
+                <Download className="w-4 h-4 mr-2" /> Export CSV
+              </Button>
               <Button variant="outline" onClick={() => navigate("/dashboard")}>
                 Back to Dashboard
               </Button>

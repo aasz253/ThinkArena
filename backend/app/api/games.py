@@ -1,8 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect, Query
+from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect, Query, Response
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.user import User
-from app.models.game import Game, Player
+from app.models.game import Game, Player, Answer
 from app.schemas.game import (
     GameCreate, GameResponse, PlayerJoin, PlayerResponse,
     AnswerSubmit, AnswerResponse, GameResults, GameHistoryResponse,
@@ -14,6 +14,8 @@ from app.services.game import (
 )
 from app.websocket.game_manager import manager, handle_host_connection, handle_player_connection
 from typing import List
+import csv
+import io
 
 router = APIRouter(prefix="/games", tags=["Games"])
 
@@ -72,6 +74,39 @@ def get_results_endpoint(game_id: str, db: Session = Depends(get_db)):
         return get_game_results(db, game_id)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
+
+
+@router.get("/{game_id}/results/csv")
+def export_results_csv(game_id: str, db: Session = Depends(get_db)):
+    game = db.query(Game).filter(Game.id == game_id).first()
+    if not game:
+        raise HTTPException(status_code=404, detail="Game not found")
+    players = (
+        db.query(Player)
+        .filter(Player.game_id == game_id)
+        .order_by(Player.score.desc())
+        .all()
+    )
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["Rank", "Nickname", "Score", "Correct", "Total", "Accuracy", "Streak"])
+    for i, p in enumerate(players, 1):
+        total = p.total_answered or 1
+        writer.writerow([
+            i,
+            p.nickname,
+            p.score,
+            p.correct_count,
+            p.total_answered,
+            f"{round(p.correct_count / total * 100)}%",
+            p.streak,
+        ])
+    output.seek(0)
+    return Response(
+        content=output.getvalue(),
+        media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename=game_{game_id}_results.csv"},
+    )
 
 
 @router.get("/history/mine", response_model=List[dict])

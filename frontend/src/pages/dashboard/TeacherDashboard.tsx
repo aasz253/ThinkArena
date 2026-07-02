@@ -5,7 +5,7 @@ import Button from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
-import { Plus, Edit, Trash2, Copy, Play, BarChart3, BookOpen, Users, TrendingUp } from "lucide-react";
+import { Plus, Edit, Trash2, Copy, Play, BarChart3, BookOpen, Users, TrendingUp, Download } from "lucide-react";
 import toast from "react-hot-toast";
 
 export default function TeacherDashboard() {
@@ -55,6 +55,22 @@ export default function TeacherDashboard() {
     }
   };
 
+  const handleExportCSV = () => {
+    const headers = ["Title", "Difficulty", "Questions", "Plays"];
+    const rows = quizzes.map((q) => [q.title, q.difficulty, q.question_count, q.play_count]);
+    const csv = [headers, ...rows]
+      .map((row) => row.map((cell) => `"${cell}"`).join(","))
+      .join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "my_quizzes.csv";
+    a.click();
+    window.URL.revokeObjectURL(url);
+    toast.success("CSV exported!");
+  };
+
   if (loading) return <div className="p-8 text-center">Loading...</div>;
 
   return (
@@ -64,9 +80,14 @@ export default function TeacherDashboard() {
           <h1 className="text-3xl font-bold">Teacher Dashboard</h1>
           <p className="text-gray-500">Manage your quizzes and view performance</p>
         </div>
-        <Link to="/create">
-          <Button><Plus className="w-4 h-4 mr-2" /> Create Quiz</Button>
-        </Link>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={handleExportCSV}>
+            <Download className="w-4 h-4 mr-2" /> CSV
+          </Button>
+          <Link to="/create">
+            <Button><Plus className="w-4 h-4 mr-2" /> Create Quiz</Button>
+          </Link>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">

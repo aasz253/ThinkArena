@@ -85,6 +85,7 @@ export const gamesAPI = {
   get: (id: string) => api.get(`/games/${id}`),
   getResults: (id: string) => api.get(`/games/${id}/results`),
   getHistory: () => api.get("/games/history/mine"),
+  exportCSV: (id: string) => api.get(`/games/${id}/results/csv`, { responseType: "blob" }),
 };
 
 export const aiAPI = {
