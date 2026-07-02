@@ -75,19 +75,19 @@ Return JSON:
       "question_type": "multiple_choice",
       "explanation": "Why this answer is correct",
       "choices": [
-        {{"choice_text": "...", "is_correct": true/false}},
-        {{"choice_text": "...", "is_correct": true/false}},
-        {{"choice_text": "...", "is_correct": true/false}},
-        {{"choice_text": "...", "is_correct": true/false}}
+        {{"choice_text": "...", "is_correct": true}},
+        {{"choice_text": "...", "is_correct": false}},
+        {{"choice_text": "...", "is_correct": false}},
+        {{"choice_text": "...", "is_correct": false}}
       ]
     }}
   ]
 }}
 
-Make sure exactly one choice per question has is_correct: true.
-For true_false, provide 2 choices: "True" and "False".
-For fill_in_blank, provide the answer as a choice with is_correct: true.
-For short_answer, provide the expected answer as a choice with is_correct: true.
+CRITICAL: Every question MUST have EXACTLY 4 choices. Exactly one choice must have is_correct: true, the other three must be false.
+For true_false: provide exactly 2 choices: "True" (is_correct: true/false) and "False" (is_correct: the opposite).
+For fill_in_blank: provide the answer as choice_text with is_correct: true plus 3 distractor choices.
+For short_answer: provide the expected answer as choice_text with is_correct: true plus 3 distractor choices.
 """
     return _call_openrouter(prompt)
 
@@ -105,12 +105,16 @@ Return JSON:
       "question_type": "{question_type}",
       "explanation": "...",
       "choices": [
-        {{"choice_text": "...", "is_correct": true/false}},
-        {{"choice_text": "...", "is_correct": true/false}}
+        {{"choice_text": "...", "is_correct": true}},
+        {{"choice_text": "...", "is_correct": false}},
+        {{"choice_text": "...", "is_correct": false}},
+        {{"choice_text": "...", "is_correct": false}}
       ]
     }}
   ]
 }}
+
+CRITICAL: For multiple_choice, every question MUST have EXACTLY 4 choices with exactly one correct.
 """
     return _call_openrouter(prompt)
 

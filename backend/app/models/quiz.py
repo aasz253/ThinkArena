@@ -45,7 +45,7 @@ class Quiz(Base):
     difficulty = Column(String, default="medium")
     category_id = Column(String, ForeignKey("categories.id", ondelete="SET NULL"), nullable=True)
     creator_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    time_per_question = Column(Integer, default=20)
+    time_per_question = Column(Integer, default=10)
     points_per_question = Column(Integer, default=1000)
     randomize_questions = Column(Boolean, default=False)
     randomize_answers = Column(Boolean, default=True)
@@ -72,7 +72,7 @@ class Question(Base):
     image_url = Column(String, nullable=True)
     order = Column(Integer, default=0)
     points = Column(Integer, default=1000)
-    time_limit = Column(Integer, default=20)
+    time_limit = Column(Integer, default=10)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     quiz = relationship("Quiz", back_populates="questions")
