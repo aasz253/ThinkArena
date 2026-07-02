@@ -122,7 +122,7 @@ async def handle_host_connection(game_id: str, websocket: WebSocket):
                     await manager.broadcast_to_players(game_id, {
                         "type": "question",
                         "question_index": 0,
-                        "question": {k: v for k, v in questions_data[0].items() if k != "choices"},
+                        "question": questions_data[0],
                         "total_questions": game.total_questions,
                     })
                 finally:
@@ -168,7 +168,7 @@ async def handle_host_connection(game_id: str, websocket: WebSocket):
                         await manager.broadcast_to_players(game_id, {
                             "type": "question",
                             "question_index": game.current_question,
-                            "question": {k: v for k, v in question_data.items() if k != "choices"},
+                            "question": question_data,
                             "total_questions": game.total_questions,
                         })
                 finally:
@@ -231,13 +231,17 @@ async def handle_player_connection(game_id: str, player_id: str, nickname: str, 
                         time_taken=data.get("time_taken", 0),
                     )
                     player = db.query(Player).filter(Player.id == player_id).first()
+                    from app.models.quiz import Choice
+                    correct_choice = db.query(Choice).filter(
+                        Choice.question_id == data["question_id"], Choice.is_correct == True
+                    ).first()
                     await manager.send_to_player(game_id, player_id, {
                         "type": "answer_result",
                         "is_correct": answer.is_correct,
                         "points_earned": answer.points_earned,
                         "streak_bonus": answer.streak_bonus,
                         "total_score": player.score,
-                        "correct_answer_id": data.get("correct_answer_id"),
+                        "correct_answer_id": correct_choice.id if correct_choice else None,
                     })
                     db_game = get_game(db, game_id)
                     all_players = db.query(Player).filter(
