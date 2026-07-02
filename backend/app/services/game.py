@@ -101,7 +101,6 @@ def submit_answer(
 
     is_correct = False
     points_earned = 0
-    streak_bonus = 0
 
     question = db.query(Question).filter(Question.id == question_id).first()
     player = db.query(Player).filter(Player.id == player_id).first()
@@ -124,10 +123,11 @@ def submit_answer(
         )
 
     if is_correct:
-        time_bonus = max(0, int((1 - time_taken / question.time_limit) * 500))
         player.streak += 1
-        streak_bonus = min(player.streak * 100, 500)
-        points_earned = question.points + time_bonus + streak_bonus
+        if time_taken < 0.5:
+            points_earned = question.points
+        else:
+            points_earned = round((1 - (time_taken / question.time_limit) / 2) * question.points)
         player.correct_count += 1
     else:
         player.streak = 0
@@ -147,7 +147,7 @@ def submit_answer(
         is_correct=is_correct,
         time_taken=time_taken,
         points_earned=points_earned,
-        streak_bonus=streak_bonus,
+        streak_bonus=0,
     )
     db.add(answer)
     db.commit()
