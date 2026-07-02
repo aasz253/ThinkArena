@@ -3,15 +3,11 @@ import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { usePlayerWebSocket } from "@/hooks/useWebSocket";
 import { Timer, Zap, Trophy, Crown, Star } from "lucide-react";
 
-const colorClasses = [
+const answerColors = [
   "bg-red-500 hover:bg-red-600",
   "bg-blue-500 hover:bg-blue-600",
   "bg-yellow-500 hover:bg-yellow-600",
   "bg-green-500 hover:bg-green-600",
-  "bg-purple-500 hover:bg-purple-600",
-  "bg-pink-500 hover:bg-pink-600",
-  "bg-indigo-500 hover:bg-indigo-600",
-  "bg-orange-500 hover:bg-orange-600",
 ];
 
 export default function PlayGamePage() {
@@ -143,7 +139,7 @@ export default function PlayGamePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white">
-      <div className="max-w-3xl mx-auto px-4 py-6">
+      <div className="max-w-3xl mx-auto px-4 py-6 pb-24">
         <div className="flex items-center justify-between mb-6">
           <div>
             <span className="text-gray-400 text-sm">Question {questionIndex + 1} of {totalQuestions}</span>
@@ -171,7 +167,7 @@ export default function PlayGamePage() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {currentQuestion.choices?.map((c: any, i: number) => {
-            let bgClass = colorClasses[i % colorClasses.length];
+            let bgClass = answerColors[i % answerColors.length];
             if (answered && selectedChoice === c.id) {
               bgClass = answerResult?.is_correct ? "bg-green-500" : "bg-red-500";
             }

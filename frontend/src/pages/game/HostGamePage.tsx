@@ -93,11 +93,18 @@ export default function HostGamePage() {
     }
   };
 
+  const answerColors = [
+    { bg: "bg-red-500", border: "border-red-500" },
+    { bg: "bg-blue-500", border: "border-blue-500" },
+    { bg: "bg-yellow-500", border: "border-yellow-500" },
+    { bg: "bg-green-500", border: "border-green-500" },
+  ];
+
   if (!game) return <div className="flex items-center justify-center min-h-screen"><div className="text-xl">Setting up game...</div></div>;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white">
-      <div className="max-w-7xl mx-auto px-4 py-6">
+      <div className="max-w-7xl mx-auto px-4 py-6 pb-20">
         {gameStatus === "waiting" && (
           <div className="text-center py-12">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/20 text-green-400 text-sm mb-6">
@@ -106,10 +113,10 @@ export default function HostGamePage() {
             </div>
             <h1 className="text-4xl md:text-6xl font-bold mb-4">{quiz?.title || "Quiz"}</h1>
             
-            <div className="inline-block p-8 rounded-3xl bg-white/10 backdrop-blur-lg mb-8">
-              <p className="text-sm text-gray-400 mb-2">Game PIN</p>
-              <p className="text-6xl md:text-8xl font-bold tracking-[0.2em] text-primary-400">{game.pin}</p>
-              <button onClick={copyPin} className="mt-4 text-sm text-gray-400 hover:text-white flex items-center justify-center gap-1 mx-auto">
+            <div className="inline-block p-10 rounded-3xl bg-white/10 backdrop-blur-lg mb-8 border-2 border-primary-500/50">
+              <p className="text-sm text-gray-400 mb-2 uppercase tracking-widest">Game PIN — Share this code</p>
+              <p className="text-7xl md:text-9xl font-bold tracking-[0.25em] text-primary-400 select-all">{game.pin}</p>
+              <button onClick={copyPin} className="mt-4 px-6 py-2 rounded-xl bg-primary-500/20 hover:bg-primary-500/40 text-primary-300 font-medium transition-colors flex items-center justify-center gap-2 mx-auto">
                 <Copy className="w-4 h-4" /> Copy PIN
               </button>
             </div>
@@ -151,14 +158,17 @@ export default function HostGamePage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 mb-8">
-              {currentQuestion.choices?.map((c: any, i: number) => (
-                <div key={c.id}
-                  className="p-6 rounded-2xl bg-white/10 backdrop-blur-lg border border-white/10 text-center text-lg font-medium"
-                >
-                  {c.choice_text}
-                </div>
-              ))}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+              {currentQuestion.choices?.map((c: any, i: number) => {
+                const color = answerColors[i % answerColors.length];
+                return (
+                  <div key={c.id}
+                    className={`${color.bg} p-6 rounded-2xl text-white text-center text-lg font-bold shadow-lg`}
+                  >
+                    {c.choice_text}
+                  </div>
+                );
+              })}
             </div>
 
             {paused && (
@@ -190,25 +200,25 @@ export default function HostGamePage() {
             </div>
 
             {leaderboard.length > 0 && (
-              <Card className="mt-6 bg-white/10 backdrop-blur-lg border-white/10">
-                <CardContent className="p-4">
-                  <h3 className="font-semibold mb-3 flex items-center gap-2">
-                    <Trophy className="w-4 h-4 text-yellow-400" /> Live Leaderboard
-                  </h3>
-                  <div className="space-y-2">
+              <div className="fixed bottom-0 left-0 right-0 z-40 bg-gray-900/95 backdrop-blur-lg border-t border-white/10 p-3">
+                <div className="max-w-7xl mx-auto flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Trophy className="w-4 h-4 text-yellow-400" />
+                    <span className="font-semibold text-sm">Leaderboard</span>
+                  </div>
+                  <div className="flex gap-4 overflow-x-auto pb-1">
                     {leaderboard.slice(0, 5).map((p: any, i: number) => (
-                      <div key={p.player_id} className="flex items-center justify-between py-2 border-b border-white/10 last:border-0">
-                        <div className="flex items-center gap-3">
-                          <span className="w-6 text-center font-bold text-gray-400">#{i + 1}</span>
-                          <Avatar name={p.nickname} size="sm" />
-                          <span>{p.nickname}</span>
-                        </div>
-                        <span className="font-bold">{p.score} pts</span>
+                      <div key={p.player_id} className="flex items-center gap-2 text-sm whitespace-nowrap">
+                        <span className={`font-bold ${i === 0 ? "text-yellow-400" : i === 1 ? "text-gray-300" : i === 2 ? "text-orange-400" : "text-gray-500"}`}>
+                          #{i + 1}
+                        </span>
+                        <span className="text-gray-300">{p.nickname}</span>
+                        <span className="font-bold text-primary-400">{p.score}</span>
                       </div>
                     ))}
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             )}
           </div>
         )}

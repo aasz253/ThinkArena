@@ -125,7 +125,7 @@ export default function CreateQuizPage() {
     if (!topic) return;
     setAiGenerating(true);
     try {
-      const res = await aiAPI.generateQuiz({ topic, difficulty, num_questions: 5 });
+      const res = await aiAPI.generateQuiz({ topic, difficulty, num_questions: 20 });
       const data = res.data;
       if (data.title) setTitle(data.title);
       if (data.description) setDescription(data.description);
@@ -184,14 +184,16 @@ export default function CreateQuizPage() {
           choices: q.choices.filter((c) => c.choice_text.trim()),
         })),
       };
+      let quizId = id;
       if (id) {
         await quizzesAPI.update(id, payload);
         toast.success("Quiz updated!");
       } else {
-        await quizzesAPI.create(payload);
+        const res = await quizzesAPI.create(payload);
+        quizId = res.data.id;
         toast.success("Quiz created!");
       }
-      navigate("/dashboard");
+      navigate(`/host/${quizId}`);
     } catch (err: any) {
       toast.error(err.response?.data?.detail || "Save failed");
     } finally {
@@ -210,10 +212,10 @@ export default function CreateQuizPage() {
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={handleAIGenerate} loading={aiGenerating}>
-            <Sparkles className="w-4 h-4 mr-2" /> AI Generate
+            <Sparkles className="w-4 h-4 mr-2" /> AI Generate 20
           </Button>
           <Button onClick={handleSave} loading={saving}>
-            {id ? "Update" : "Save Quiz"}
+            {id ? "Update" : "Done"}
           </Button>
         </div>
       </div>
@@ -326,12 +328,12 @@ export default function CreateQuizPage() {
         </Card>
       ))}
 
-      <div className="flex gap-4 mt-6">
-        <Button variant="outline" onClick={addQuestion} className="flex-1">
+      <div className="flex flex-col sm:flex-row gap-4 mt-6 sticky bottom-0 bg-white dark:bg-gray-900 p-4 -mx-4 border-t border-gray-200 dark:border-gray-800">
+        <Button variant="outline" onClick={addQuestion} className="sm:flex-1">
           <Plus className="w-4 h-4 mr-2" /> Add Question
         </Button>
-        <Button onClick={handleSave} loading={saving} className="flex-1">
-          {id ? "Update Quiz" : "Save Quiz"}
+        <Button onClick={handleSave} loading={saving} className="sm:flex-1 text-lg py-4">
+          {id ? "Update Quiz" : "Done — Host Game"}
         </Button>
       </div>
     </div>

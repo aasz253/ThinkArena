@@ -58,7 +58,7 @@ Generate engaging, educational, and accurate quiz content.
 Respond ONLY with valid JSON. No markdown, no code blocks."""
 
 
-def generate_quiz(topic: str, difficulty: str = "medium", num_questions: int = 5, question_types: List[str] = ["multiple_choice"]) -> str:
+def generate_quiz(topic: str, difficulty: str = "medium", num_questions: int = 20, question_types: List[str] = ["multiple_choice"]) -> str:
     prompt = f"""{SYSTEM_PROMPT}
 
 Generate a quiz about "{topic}" at {difficulty} difficulty with {num_questions} questions.
