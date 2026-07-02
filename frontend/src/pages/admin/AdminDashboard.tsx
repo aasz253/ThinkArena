@@ -176,7 +176,7 @@ export default function AdminDashboard() {
                         <select value={u.role} onChange={(e) => changeRole(u.id, e.target.value)} className="text-sm px-2 py-1 rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 outline-none">
                           <option value="student">Student</option>
                           <option value="teacher">Teacher</option>
-                          <option value="admin">Admin</option>
+                          <option value="administrator">Admin</option>
                         </select>
                       </td>
                       <td className="py-2 px-3 text-center">{u.level || 1}</td>

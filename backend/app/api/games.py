@@ -24,7 +24,7 @@ def create_game_endpoint(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    if current_user.role not in ["teacher", "admin"]:
+    if current_user.role not in ["teacher", "administrator"]:
         raise HTTPException(status_code=403, detail="Only teachers can host games")
     try:
         game = create_game(db, data.quiz_id, current_user.id)

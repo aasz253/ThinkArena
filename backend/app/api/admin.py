@@ -15,7 +15,7 @@ router = APIRouter(prefix="/admin", tags=["Admin"])
 
 @router.get("/dashboard")
 def admin_dashboard(
-    current_user: User = Depends(require_role("admin")),
+    current_user: User = Depends(require_role("administrator")),
     db: Session = Depends(get_db),
 ):
     total_users = db.query(func.count(User.id)).scalar()
@@ -63,7 +63,7 @@ def list_users(
     limit: int = 50,
     role: Optional[str] = None,
     search: Optional[str] = None,
-    current_user: User = Depends(require_role("admin")),
+    current_user: User = Depends(require_role("administrator")),
     db: Session = Depends(get_db),
 ):
     query = db.query(User)
@@ -94,14 +94,14 @@ def list_users(
 def update_user_role(
     user_id: str,
     data: dict,
-    current_user: User = Depends(require_role("admin")),
+    current_user: User = Depends(require_role("administrator")),
     db: Session = Depends(get_db),
 ):
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     new_role = data.get("role")
-    if new_role not in ["student", "teacher", "admin"]:
+    if new_role not in ["student", "teacher", "administrator"]:
         raise HTTPException(status_code=400, detail="Invalid role")
     user.role = new_role
     db.commit()
@@ -111,7 +111,7 @@ def update_user_role(
 @router.get("/users/{user_id}")
 def admin_get_user(
     user_id: str,
-    current_user: User = Depends(require_role("admin")),
+    current_user: User = Depends(require_role("administrator")),
     db: Session = Depends(get_db),
 ):
     user = db.query(User).filter(User.id == user_id).first()
@@ -149,7 +149,7 @@ def admin_get_user(
 @router.put("/users/{user_id}/toggle-active")
 def toggle_user_active(
     user_id: str,
-    current_user: User = Depends(require_role("admin")),
+    current_user: User = Depends(require_role("administrator")),
     db: Session = Depends(get_db),
 ):
     user = db.query(User).filter(User.id == user_id).first()
@@ -166,7 +166,7 @@ def toggle_user_active(
 def list_all_quizzes(
     skip: int = 0,
     limit: int = 50,
-    current_user: User = Depends(require_role("admin")),
+    current_user: User = Depends(require_role("administrator")),
     db: Session = Depends(get_db),
 ):
     quizzes = db.query(Quiz).order_by(desc(Quiz.created_at)).offset(skip).limit(limit).all()
@@ -189,7 +189,7 @@ def list_all_quizzes(
 def view_logs(
     skip: int = 0,
     limit: int = 100,
-    current_user: User = Depends(require_role("admin")),
+    current_user: User = Depends(require_role("administrator")),
     db: Session = Depends(get_db),
 ):
     logs = db.query(Log).order_by(desc(Log.created_at)).offset(skip).limit(limit).all()
@@ -211,7 +211,7 @@ def view_logs(
 @router.delete("/quizzes/{quiz_id}")
 def admin_delete_quiz(
     quiz_id: str,
-    current_user: User = Depends(require_role("admin")),
+    current_user: User = Depends(require_role("administrator")),
     db: Session = Depends(get_db),
 ):
     quiz = db.query(Quiz).filter(Quiz.id == quiz_id).first()

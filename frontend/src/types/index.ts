@@ -2,7 +2,7 @@ export interface User {
   id: string;
   email: string;
   username: string;
-  role: "student" | "teacher" | "admin";
+  role: "student" | "teacher" | "administrator";
   is_active: boolean;
   is_verified: boolean;
   profile?: UserProfile;

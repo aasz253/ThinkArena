@@ -49,25 +49,25 @@ export default function App() {
       } />
       
       <Route path="/dashboard" element={
-        <ProtectedRoute roles={["teacher", "admin"]}>
+        <ProtectedRoute roles={["teacher", "administrator"]}>
           <Layout><TeacherDashboard /></Layout>
         </ProtectedRoute>
       } />
       
       <Route path="/create" element={
-        <ProtectedRoute roles={["teacher", "admin"]}>
+        <ProtectedRoute roles={["teacher", "administrator"]}>
           <Layout><CreateQuizPage /></Layout>
         </ProtectedRoute>
       } />
       
       <Route path="/edit/:id" element={
-        <ProtectedRoute roles={["teacher", "admin"]}>
+        <ProtectedRoute roles={["teacher", "administrator"]}>
           <Layout><CreateQuizPage /></Layout>
         </ProtectedRoute>
       } />
       
       <Route path="/host/:quizId" element={
-        <ProtectedRoute roles={["teacher", "admin"]}>
+        <ProtectedRoute roles={["teacher", "administrator"]}>
           <Layout hideFooter><HostGamePage /></Layout>
         </ProtectedRoute>
       } />
@@ -82,7 +82,7 @@ export default function App() {
       } />
       
       <Route path="/admin" element={
-        <ProtectedRoute roles={["admin"]}>
+        <ProtectedRoute roles={["administrator"]}>
           <Layout><AdminDashboard /></Layout>
         </ProtectedRoute>
       } />

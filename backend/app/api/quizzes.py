@@ -24,7 +24,7 @@ def create_quiz_endpoint(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    if current_user.role not in ["teacher", "admin"]:
+    if current_user.role not in ["teacher", "administrator"]:
         raise HTTPException(status_code=403, detail="Only teachers can create quizzes")
     quiz = create_quiz(db, data, current_user.id)
     profile = current_user.profile
@@ -63,7 +63,7 @@ def create_category_endpoint(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    if current_user.role != "admin":
+    if current_user.role != "administrator":
         raise HTTPException(status_code=403, detail="Admin only")
     return create_category(db, data.name, data.description, data.icon, data.color)
 
@@ -93,7 +93,7 @@ def update_quiz_endpoint(
     quiz = get_quiz(db, quiz_id)
     if not quiz:
         raise HTTPException(status_code=404, detail="Quiz not found")
-    if quiz.creator_id != current_user.id and current_user.role != "admin":
+    if quiz.creator_id != current_user.id and current_user.role != "administrator":
         raise HTTPException(status_code=403, detail="Not your quiz")
     quiz = update_quiz(db, quiz_id, data)
     return _quiz_to_detail(quiz)
@@ -108,7 +108,7 @@ def delete_quiz_endpoint(
     quiz = get_quiz(db, quiz_id)
     if not quiz:
         raise HTTPException(status_code=404, detail="Quiz not found")
-    if quiz.creator_id != current_user.id and current_user.role != "admin":
+    if quiz.creator_id != current_user.id and current_user.role != "administrator":
         raise HTTPException(status_code=403, detail="Not your quiz")
     delete_quiz(db, quiz_id)
     return {"message": "Quiz deleted successfully"}
@@ -120,7 +120,7 @@ def duplicate_quiz_endpoint(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    if current_user.role not in ["teacher", "admin"]:
+    if current_user.role not in ["teacher", "administrator"]:
         raise HTTPException(status_code=403, detail="Only teachers can duplicate quizzes")
     quiz = duplicate_quiz(db, quiz_id, current_user.id)
     if not quiz:

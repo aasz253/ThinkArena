@@ -51,7 +51,7 @@ def api_generate_quiz(
     data: QuizGenerateRequest,
     current_user: User = Depends(get_current_user),
 ):
-    if current_user.role not in ["teacher", "admin"]:
+    if current_user.role not in ["teacher", "administrator"]:
         raise HTTPException(status_code=403, detail="Only teachers can use AI generation")
     import json
     result = generate_quiz(data.topic, data.difficulty, data.num_questions, data.question_types)
@@ -66,7 +66,7 @@ def api_generate_questions(
     data: QuestionsGenerateRequest,
     current_user: User = Depends(get_current_user),
 ):
-    if current_user.role not in ["teacher", "admin"]:
+    if current_user.role not in ["teacher", "administrator"]:
         raise HTTPException(status_code=403, detail="Only teachers can use AI generation")
     import json
     result = generate_questions(data.topic, data.count, data.question_type)
