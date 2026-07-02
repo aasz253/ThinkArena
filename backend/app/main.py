@@ -4,7 +4,11 @@ from fastapi.responses import JSONResponse
 from app.config import settings
 from app.database import engine, Base
 from app.api import auth, users, quizzes, games, ai, admin
-from app.middleware.security import RateLimitMiddleware, SecurityHeadersMiddleware, SQLInjectionProtectionMiddleware
+from app.middleware.security import (
+    RateLimitMiddleware, SecurityHeadersMiddleware,
+    InputValidationMiddleware, AutomationBlockerMiddleware,
+    PathTraversalMiddleware,
+)
 from app.services.auth import hash_password
 from app.models.user import User, Profile
 from app.database import SessionLocal
@@ -31,7 +35,9 @@ app.add_middleware(
 )
 
 app.add_middleware(SecurityHeadersMiddleware)
-app.add_middleware(SQLInjectionProtectionMiddleware)
+app.add_middleware(PathTraversalMiddleware)
+app.add_middleware(AutomationBlockerMiddleware)
+app.add_middleware(InputValidationMiddleware)
 app.add_middleware(RateLimitMiddleware, max_requests=settings.RATE_LIMIT_PER_MINUTE)
 
 app.include_router(auth.router)
